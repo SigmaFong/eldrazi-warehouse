@@ -1,4 +1,4 @@
-import type { CardInventory, Order } from "../types";
+import type { CardInventory, Order } from "../../types";
 import { StatCard } from "../components/ui/StatCard";
 import { BarChart } from "../components/ui/BarChart";
 

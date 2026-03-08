@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CardInventory, ScryfallCard } from "../types";
+import type { CardInventory, ScryfallCard } from "../../types";
 import { Table } from "../components/ui/Table";
 import { fetchScryfallById, searchScryfallEldrazi } from "../api";
 

@@ -1,20 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Page, Order, Distributor } from "../types";
-import { getOrders, getDistributors } from "../api";
-import { useInventory } from "../hooks/useInventory";
-import { useToast }     from "../hooks/useToast";
-import { useAuth }      from "../context/AuthContext";
+import { getOrders, getDistributors } from "./api";
+import { useInventory } from "./hooks/useInventory";
+import { useToast }     from "./hooks/useToast";
+import { useAuth }      from "./context/AuthContext";
 
-import { Sidebar }   from "../components/layout/Sidebar";
-import { Topbar }    from "../components/layout/Topbar";
-import { Toasts }    from "../components/ui/Toasts";
+import { Sidebar }   from "./components/layout/Sidebar";
+import { Topbar }    from "./components/layout/Topbar";
+import { Toasts }    from "./components/ui/Toasts";
 
-import { LoginPage }        from "../pages/LoginPage";
-import { DashboardPage }    from "../pages/DashboardPage";
-import { InventoryPage }    from "../pages/InventoryPage";
-import { OrdersPage }       from "../pages/OrdersPage";
-import { DistributorsPage } from "../pages/DistributorsPage";
-import { ScryfallPage }     from "../pages/ScryfallPage";
+import { LoginPage }        from "./pages/LoginPage";
+import { DashboardPage }    from "./pages/DashboardPage";
+import { InventoryPage }    from "./pages/InventoryPage";
+import { OrdersPage }       from "./pages/OrdersPage";
+import { DistributorsPage } from "./pages/DistributorsPage";
+import { ScryfallPage }     from "./pages/ScryfallPage";
 
 function FontLoader() {
   return (
@@ -90,6 +90,7 @@ function AppShell() {
   const pageTitle = navItems.find(n => n.key === page)?.label ?? "";
 
   return (
+    
     <div className="flex min-h-screen bg-zinc-950 relative z-10" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
       <Sidebar page={page} navItems={navItems} onNavigate={setPage} />
       <main className="ml-60 flex-1 flex flex-col min-h-screen">

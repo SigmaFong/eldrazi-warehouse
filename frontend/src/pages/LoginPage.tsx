@@ -159,7 +159,7 @@ function EldraziGlyph() {
           >
             <div className="mb-7">
               <h2 className="text-2xl font-bold text-white mb-1">Welcome back</h2>
-              <p className="text-slate-400 text-sm">Sign in to access the warehouse.</p>
+              <p className="text-slate-400 text-sm">Log in to access the warehouse.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -243,7 +243,7 @@ function EldraziGlyph() {
                     Authenticating…
                   </>
                 ) : (
-                  "Sign in →"
+                  "Enter the Void →"
                 )}
               </button>
             </form>

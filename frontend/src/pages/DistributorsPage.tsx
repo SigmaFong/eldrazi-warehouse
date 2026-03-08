@@ -1,4 +1,4 @@
-import type { Distributor } from "../types";
+import type { Distributor } from "../../types";
 import { Badge } from "../components/ui/Badge";
 import { Table } from "../components/ui/Table";
 

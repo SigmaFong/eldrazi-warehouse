@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CardInventory, Condition } from "../types";
+import type { CardInventory, Condition } from "../../types";
 import { Badge } from "../components/ui/Badge";
 import { Modal } from "../components/ui/Modal";
 import { Table } from "../components/ui/Table";
