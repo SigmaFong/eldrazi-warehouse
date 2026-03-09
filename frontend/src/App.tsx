@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Page, Order, Distributor } from "../types";
+import type { Page, Order, Distributor } from "./types";
 import { getOrders, getDistributors } from "./api";
 import { useInventory } from "./hooks/useInventory";
 import { useToast }     from "./hooks/useToast";
@@ -15,6 +15,7 @@ import { InventoryPage }    from "./pages/InventoryPage";
 import { OrdersPage }       from "./pages/OrdersPage";
 import { DistributorsPage } from "./pages/DistributorsPage";
 import { ScryfallPage }     from "./pages/ScryfallPage";
+import { SystemInfoPage }   from "./pages/SystemInfoPage";
 
 function FontLoader() {
   return (
@@ -28,18 +29,14 @@ function FontLoader() {
 function VoidBg() {
   return (
     <>
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.025] z-0"
+      <div className="fixed inset-0 pointer-events-none opacity-[0.025] z-0"
         style={{
           backgroundImage:
             "repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(139,92,246,.6) 40px,rgba(139,92,246,.6) 41px)," +
             "repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,92,246,.6) 40px,rgba(139,92,246,.6) 41px)",
-        }}
-      />
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%,rgba(109,40,217,.12) 0%,transparent 70%)" }}
-      />
+        }} />
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%,rgba(109,40,217,.12) 0%,transparent 70%)" }} />
     </>
   );
 }
@@ -77,7 +74,7 @@ function AppShell() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  const pendingCount = orders.filter(o => ["pending","processing"].includes(o.status)).length;
+  const pendingCount = orders.filter(o => ["pending", "processing"].includes(o.status)).length;
 
   const navItems = [
     { key: "dashboard"    as Page, icon: "◈", label: "Dashboard" },
@@ -87,10 +84,11 @@ function AppShell() {
     { key: "scryfall"     as Page, icon: "⬡", label: "Scryfall API" },
   ];
 
-  const pageTitle = navItems.find(n => n.key === page)?.label ?? "";
+  const pageTitle =
+    page === "system" ? "System Info" :
+    navItems.find(n => n.key === page)?.label ?? "";
 
   return (
-    
     <div className="flex min-h-screen bg-zinc-950 relative z-10" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
       <Sidebar page={page} navItems={navItems} onNavigate={setPage} />
       <main className="ml-60 flex-1 flex flex-col min-h-screen">
@@ -104,10 +102,18 @@ function AppShell() {
           ) : (
             <>
               {page === "dashboard"    && <DashboardPage    inventory={inventory} orders={orders} />}
-              {page === "inventory"    && <InventoryPage    inventory={inventory} onUpdate={updateCard} addToast={addToast} />}
-              {page === "orders"       && <OrdersPage       orders={orders} inventory={inventory} addToast={addToast} />}
+              {page === "inventory"    && <InventoryPage    inventory={inventory} onUpdate={updateCard} addToast={addToast} onReload={reloadInventory} />}
+              {page === "orders"       && (
+                <OrdersPage
+                  orders={orders}
+                  inventory={inventory}
+                  distributors={distributors}   // ← pass distributors for dropdown
+                  addToast={addToast}
+                />
+              )}
               {page === "distributors" && <DistributorsPage distributors={distributors} />}
-              {page === "scryfall"     && <ScryfallPage     inventory={inventory} addToast={addToast} />}
+              {page === "scryfall"     && <ScryfallPage     inventory={inventory} addToast={addToast} onReload={reloadInventory} />}
+              {page === "system"       && <SystemInfoPage />}
             </>
           )}
         </div>
@@ -123,9 +129,9 @@ export default function App() {
     <>
       <FontLoader />
       <VoidBg />
-      {isLoading                         && <SessionLoader />}
-      {!isLoading && !isAuthenticated    && <LoginPage />}
-      {!isLoading &&  isAuthenticated    && <AppShell />}
+      {isLoading                      && <SessionLoader />}
+      {!isLoading && !isAuthenticated && <LoginPage />}
+      {!isLoading &&  isAuthenticated && <AppShell />}
     </>
   );
 }

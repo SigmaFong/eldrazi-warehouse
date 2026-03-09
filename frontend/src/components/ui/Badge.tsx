@@ -1,4 +1,4 @@
-import type { Rarity, Condition, OrderStatus, DistributorTier } from "../../../types";
+import type { Rarity, Condition, OrderStatus, DistributorTier } from "../../types";
 
 const RARITY_CLS: Record<Rarity, string> = {
   mythic:   "bg-amber-500/20  text-amber-300  border border-amber-500/30",

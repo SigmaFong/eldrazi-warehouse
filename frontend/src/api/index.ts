@@ -1,5 +1,5 @@
 import axiosInstance from "./axiosInstance";
-import type { CardInventory, Order, Distributor, ScryfallCard } from "../../types";
+import type { CardInventory, Order, Distributor, ScryfallCard } from "../types";
 
 // ── Inventory ─────────────────────────────────────────────────────────────
 export async function getInventory(): Promise<CardInventory[]> {

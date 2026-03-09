@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Order       from "../models/Order.js";
 import Card        from "../models/Card.js";
 import Distributor from "../models/Distributor.js";
@@ -45,85 +44,82 @@ export const getOrder = catchAsync(async (req, res, next) => {
   sendSuccess(res, 200, { order });
 });
 
-// ── POST /api/orders — with atomic stock reservation (Module 4.3) ─────────
+// ── POST /api/orders ──────────────────────────────────────────────────────
+// Uses manual rollback instead of MongoDB transactions.
+// Transactions require a replica set — this approach works on standalone MongoDB.
 export const createOrder = catchAsync(async (req, res, next) => {
   const { distributorId, items, notes } = req.body;
 
+  // ── 1. Validate distributor ───────────────────────────────────────────
   const dist = await Distributor.findById(distributorId);
   if (!dist) return next(new AppError("Distributor not found.", 404));
 
-  // ── MongoDB session for atomic multi-document transaction ─────────────
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // ── 2. Validate all cards upfront before touching anything ───────────
+  const resolvedItems = [];
+  let total = 0;
 
-  try {
-    // Validate all cards and build order items
-    const orderItems = [];
-    let total = 0;
+  for (const item of items) {
+    const card = await Card.findById(item.cardId);
+    if (!card) return next(new AppError(`Card ${item.cardId} not found.`, 404));
 
-    for (const item of items) {
-      const card = await Card.findById(item.cardId).session(session);
-      if (!card) throw new AppError(`Card ${item.cardId} not found.`, 404);
-
-      const available = card.quantity - card.reserved;
-      if (available < item.qty) {
-        throw new AppError(
-          `Insufficient stock for "${card.name}". Available: ${available}, requested: ${item.qty}.`,
-          400
-        );
-      }
-
-      // Atomically reserve stock
-      await Card.findByIdAndUpdate(
-        card._id,
-        { $inc: { reserved: item.qty } },
-        { session }
-      );
-
-      orderItems.push({
-        card:     card._id,
-        cardId:   card.cardId,
-        cardName: card.name,
-        qty:      item.qty,
-        price:    card.price,
-      });
-
-      total += card.price * item.qty;
-    }
-
-    // Check distributor credit limit
-    if (dist.balance + total > dist.creditLimit) {
-      throw new AppError(
-        `Order total $${total.toFixed(2)} exceeds distributor credit limit.`,
+    const available = card.quantity - card.reserved;
+    if (available < item.qty) {
+      return next(new AppError(
+        `Insufficient stock for "${card.name}". Available: ${available}, requested: ${item.qty}.`,
         400
-      );
+      ));
     }
 
-    // Create order
-    const [order] = await Order.create(
-      [{ distributor: dist._id, createdBy: req.user._id, items: orderItems, notes }],
-      { session }
-    );
+    resolvedItems.push({
+      card:     card._id,
+      cardId:   card.cardId,
+      cardName: card.name,
+      qty:      item.qty,
+      price:    card.price,
+    });
 
-    // Update distributor balance
-    await Distributor.findByIdAndUpdate(
-      dist._id,
-      { $inc: { balance: total } },
-      { session }
-    );
+    total += card.price * item.qty;
+  }
 
-    await session.commitTransaction();
-    session.endSession();
+  // ── 3. Check credit limit ─────────────────────────────────────────────
+  if (dist.balance + total > dist.creditLimit) {
+    return next(new AppError(
+      `Order total $${total.toFixed(2)} exceeds available credit ($${(dist.creditLimit - dist.balance).toFixed(2)}).`,
+      400
+    ));
+  }
 
-    const populated = await order.populate([
-      { path: "distributor", select: "name country tier" },
-      { path: "createdBy",   select: "name email" },
-    ]);
+  // ── 4. Reserve stock (track for rollback on failure) ──────────────────
+  const reservedCards = [];
+  try {
+    for (const item of resolvedItems) {
+      await Card.findByIdAndUpdate(item.card, { $inc: { reserved: item.qty } });
+      reservedCards.push({ cardId: item.card, qty: item.qty });
+    }
+
+    // ── 5. Create the order ─────────────────────────────────────────────
+    const order = await Order.create({
+      distributor: dist._id,
+      createdBy:   req.user._id,
+      items:       resolvedItems,
+      notes,
+    });
+
+    // ── 6. Update distributor balance ───────────────────────────────────
+    await Distributor.findByIdAndUpdate(dist._id, { $inc: { balance: total } });
+
+    // ── 7. Populate and return ──────────────────────────────────────────
+    const populated = await Order.findById(order._id)
+      .populate("distributor", "name country tier")
+      .populate("createdBy",   "name email");
 
     sendSuccess(res, 201, { order: populated });
+
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
+    // ── Manual rollback: un-reserve any cards already incremented ───────
+    for (const { cardId, qty } of reservedCards) {
+      await Card.findByIdAndUpdate(cardId, { $inc: { reserved: -qty } }).catch(() => {});
+    }
     throw err;
   }
 });

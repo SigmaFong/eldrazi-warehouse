@@ -1,4 +1,4 @@
-import type { User } from "../../../types";
+import type { User } from "../../types";
 
 const ROLE_COLORS: Record<string, string> = {
   admin:       "bg-amber-500/20  text-amber-300  border-amber-500/30",
