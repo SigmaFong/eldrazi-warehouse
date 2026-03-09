@@ -1,4 +1,4 @@
-import type { Toast } from "../../../types";
+import type { Toast } from "../../types";
 
 interface ToastsProps {
   toasts: Toast[];

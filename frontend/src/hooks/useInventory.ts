@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { CardInventory } from "../../types";
+import type { CardInventory } from "../types";
 import { getInventory, updateInventory } from "../api";
 
 export function useInventory() {

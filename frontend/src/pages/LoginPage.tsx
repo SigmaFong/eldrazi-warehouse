@@ -5,6 +5,7 @@ const DEMO_ACCOUNTS = [
   { email: "admin@eldrazi.com",   password: "Admin1234!",  role: "Admin",       icon: "◈" },
   { email: "manager@eldrazi.com", password: "Manage1234!", role: "Manager",     icon: "◎" },
   { email: "tanaka@tce.jp",       password: "Dist1234!",   role: "Distributor", icon: "◉" },
+  { email: "kk@tcg.ac.th",        password: "Viewer1234!", role: "viewer",      icon: "◌" },
 ];
 
 export function LoginPage() {
