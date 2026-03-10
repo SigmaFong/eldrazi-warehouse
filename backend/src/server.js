@@ -22,10 +22,16 @@ const app = express();
 
 // ── Global Middleware (Module 3.1) ────────────────────────────────────────
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman)
-    // and any local network origin
-    if (!origin || CLIENT_URL || origin.includes('localhost') || origin.includes('192.168.')) {
+  origin: function (origin, callback) {
+    const allowedOrigin = process.env.CLIENT_URL;
+
+    if (
+      !origin || 
+      origin === allowedOrigin || 
+      origin.includes('localhost') || 
+      origin.includes('127.0.0.1') || 
+      origin.includes('192.168.')
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
