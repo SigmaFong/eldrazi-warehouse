@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Eldrazi Vault",
+    "slug": "eldrazi-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#09090b"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.eldrazi.vault"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#09090b"
+      },
+      "package": "com.eldrazi.vault"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "scheme": "eldrazi-vault"
+  }
+}
