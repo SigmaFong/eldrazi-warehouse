@@ -22,8 +22,16 @@ const app = express();
 
 // ── Global Middleware (Module 3.1) ────────────────────────────────────────
 app.use(cors({
-  origin:      process.env.CLIENT_URL,
-  credentials: true,               // allow cookies cross-origin
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman)
+    // and any local network origin
+    if (!origin || CLIENT_URL || origin.includes('localhost') || origin.includes('192.168.')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
 }));
 app.use(cookieParser());
 app.use(express.json({ limit: "10kb" }));
